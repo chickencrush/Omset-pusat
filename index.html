@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard Omset Chicken Crush</title>
+<link rel="icon" href="data:,"> <!-- Menghilangkan error favicon 404 -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 :root{--primary:#ff6b35;--primary-dark:#e55a2b;--bg:#f5f7fa;--card:#fff;--text:#1a202c;--muted:#718096;--border:#e2e8f0;--success:#38a169}
@@ -34,7 +35,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
 .card-title{font-size:15px;font-weight:700;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
 .subtitle{font-size:12px;color:var(--muted);font-weight:400}
 
-/* Custom Dropdown Style */
 select.dropdown { appearance: none; background-color: #fff; border: 1.5px solid var(--border); padding: 8px 32px 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--text); cursor: pointer; outline: none; transition: 0.2s; background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23718096%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right 12px top 50%; background-size: 10px auto; }
 select.dropdown:hover { border-color: var(--primary); }
 select.dropdown:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255,107,53,.15); }
@@ -180,8 +180,9 @@ tr:hover td{background:#fff9f6}
 
 <script>
 /* ========== KONFIGURASI ========== */
-// PASTE URL CSV DASHBOARD_MASTER DI SINI:
-const MASTER_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR7ZBYz3uCVgKNdFUr1Lm0Ype6DgHzn6NyVQ15NhPaM1aZMtQEWJ3FXD-byaXX5z3t79j48aGzIiuwh/pub?gid=785911957&single=true&output=csv'; 
+// PASTE URL CSV DASHBOARD_MASTER DI SINI (Di dalam tanda kutip):
+const MASTER_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR7ZBYz3uCVgKNdFUr1Lm0Ype6DgHzn6NyVQ15NhPaM1aZMtQEWJ3FXD-byaXX5z3t79j48aGzIiuwh/pub?gid=785911957&single=true&output=csv
+'; 
 const AUTO_REFRESH_MS = 60000;
 
 /* ========== STATE ========== */
@@ -213,22 +214,26 @@ function fmtShort(n){
   if(n>=1e3) return 'Rp '+(n/1e3).toFixed(0)+' rb';
   return 'Rp '+n;
 }
-function parseCSV(text){
-  const rows=[]; let cur='', inQ=false, row=[];
-  for(let i=0;i<text.length;i++){
-    const c=text[i];
+
+function parseCSV(text) {
+  const delimiter = text.includes(';') ? ';' : ',';
+  const rows = []; 
+  let cur = '', inQ = false, row = [];
+  
+  for(let i=0; i<text.length; i++){
+    const c = text[i];
     if(inQ){
-      if(c==='"'&&text[i+1]==='"'){cur+='"';i++;}
-      else if(c==='"') inQ=false;
-      else cur+=c;
+      if(c === '"' && text[i+1] === '"'){ cur += '"'; i++; }
+      else if(c === '"') inQ = false;
+      else cur += c;
     } else {
-      if(c==='"') inQ=true;
-      else if(c===','){row.push(cur);cur='';}
-      else if(c==='\n'){row.push(cur);rows.push(row);row=[];cur='';}
-      else if(c!=='\r') cur+=c;
+      if(c === '"') inQ = true;
+      else if(c === delimiter){ row.push(cur); cur=''; }
+      else if(c === '\n'){ row.push(cur); rows.push(row); row=[]; cur=''; }
+      else if(c !== '\r') cur += c;
     }
   }
-  if(cur!==''||row.length){row.push(cur);rows.push(row);}
+  if(cur !== '' || row.length){ row.push(cur); rows.push(row); }
   return rows;
 }
 
@@ -244,14 +249,26 @@ async function loadData(){
   document.getElementById('dashboard').style.display='none';
 
   try{
-    const txt = await fetch(MASTER_CSV_URL+'&_='+Date.now()).then(r=>r.text());
+    const response = await fetch(MASTER_CSV_URL + '&_=' + Date.now(), {
+      method: 'GET',
+      mode: 'cors',
+      headers: { 'Accept': 'text/csv, text/plain, */*' }
+    });
+    
+    if (!response.ok) throw new Error('Network response was not ok');
+    const txt = await response.text();
+    
+    if (txt.trim().startsWith('<!DOCTYPE html>') || txt.trim().startsWith('<html>')) {
+      throw new Error('Link mengembalikan halaman HTML, bukan CSV. Pastikan link Publish to Web sudah benar.');
+    }
+
     parseMasterData(txt);
     render();
     document.getElementById('lastUpdate').textContent='Update: '+new Date().toLocaleTimeString('id-ID');
     document.getElementById('notice').style.display='none';
   }catch(e){
-    console.error(e);
-    alert('Gagal memuat data: '+e.message);
+    console.error("Fetch Error:", e);
+    alert('Gagal memuat data: ' + e.message + '\n\nSilakan cek Console (F12) untuk detail.');
   }finally{
     document.getElementById('loading').style.display='none';
     btn.disabled=false; btn.textContent='🔄 Refresh';
@@ -261,23 +278,50 @@ async function loadData(){
 function parseMasterData(text){
   const rows = parseCSV(text);
   dailyData = []; categoryData = []; menuData = []; compData = [];
-  let currentSection = '';
+  let currentSection = 'NONE';
 
   rows.forEach(r => {
-    if(!r[0]) return;
-    if(r[0].startsWith('===')) { currentSection = r[0].replace(/=/g,'').trim(); return; }
+    if(!r || r.length < 2) return;
     
-    if(currentSection === 'HARIAN' && r[0] !== 'Tanggal'){
-      dailyData.push({ tanggal: r[0], hari: r[1], signature: num(r[2]), tamansiswa: num(r[3]), godean: num(r[4]), sch: num(r[5]) });
+    const c0 = String(r[0] || '').toUpperCase().trim();
+    const c1 = String(r[1] || '').toUpperCase().trim();
+    const c2 = String(r[2] || '').toUpperCase().trim();
+
+    // Abaikan baris error dari Google Sheets
+    if(c0 === '#ERROR!') return;
+
+    // Deteksi bagian data berdasarkan nama Header
+    if (c0 === 'TANGGAL' && c1 === 'HARI') { currentSection = 'HARIAN'; return; }
+    if (c0 === 'OUTLET' && c1 === 'DINE IN') { currentSection = 'KATEGORI'; return; }
+    if (c0 === 'OUTLET' && c1 === 'TIPE' && c2 === 'KATEGORI') { currentSection = 'MENU'; return; }
+    if (c0 === 'OUTLET' && c1 === 'OKT' && c2 === 'SEP') { currentSection = 'PERBANDINGAN'; return; }
+
+    // Masukkan data
+    if(currentSection === 'HARIAN'){
+      dailyData.push({ 
+        tanggal: r[0], hari: r[1], 
+        signature: num(r[2]), tamansiswa: num(r[3]), godean: num(r[4]), sch: num(r[5]),
+        billSig: num(r[6]), billTam: num(r[7]), billGod: num(r[8]), billSch: num(r[9])
+      });
     }
-    if(currentSection === 'KATEGORI' && r[0] !== 'Outlet'){
+    else if(currentSection === 'KATEGORI'){
       categoryData.push({ outlet: r[0], dineIn: num(r[1]), takeAway: num(r[2]), goFood: num(r[3]), grabFood: num(r[4]), shopeeFood: num(r[5]), esbOrder: num(r[6]) });
     }
-    if(currentSection === 'MENU' && r[0] !== 'Outlet'){
+    else if(currentSection === 'MENU'){
       menuData.push({ outlet: r[0], tipe: r[1], kategori: r[2], rank: num(r[3]), menu: r[4], nilai: num(r[5]) });
     }
-    if(currentSection === 'PERBANDINGAN' && r[0] !== 'Outlet'){
+    else if(currentSection === 'PERBANDINGAN'){
       compData.push({ outlet: r[0], okt: num(r[1]), sep: num(r[2]) });
+    }
+  });
+  
+  // Konversi format tanggal Google (DD/MM/YYYY) ke format JS (YYYY-MM-DD)
+  dailyData.forEach(d => {
+    if(d.tanggal && d.tanggal.includes('/')) {
+      const parts = d.tanggal.split('/');
+      if(parts.length === 3) {
+        d.tanggal = `${parts[2]}-${parts[1]}-${parts[0]}`;
+      }
     }
   });
 }
@@ -286,15 +330,30 @@ function parseMasterData(text){
 function render(){
   document.getElementById('dashboard').style.display='block';
   
-  // Hitung Total Omset & Bill
+  // Hitung KPI
   const totalOmset = dailyData.reduce((s,d)=>s+(d.signature+d.tamansiswa+d.godean+d.sch),0);
-  const totalBill = 0; // Bill tidak ada di master (bisa disesuaikan)
-  const avgBill = 0;
+  const totalBill = dailyData.reduce((s,d)=>s+(d.billSig+d.billTam+d.billGod+d.billSch),0);
+  const avgBill = totalBill > 0 ? totalOmset / totalBill : 0;
 
   document.getElementById('kOmset').textContent = fmtShort(totalOmset);
   document.getElementById('kOmsetSub').textContent = `${dailyData.length} hari • rata² ${fmtShort(totalOmset/Math.max(1,dailyData.length))}/hari`;
+  document.getElementById('kBill').textContent = totalBill.toLocaleString('id-ID');
+  document.getElementById('kBillSub').textContent = `${(totalBill/Math.max(1,dailyData.length)).toFixed(0)} bill/hari`;
+  document.getElementById('kAvg').textContent = fmtRp(avgBill);
   
-  // Filter Chips
+  // Best Outlet
+  const totals = { signature:0, tamansiswa:0, godean:0, sch:0 };
+  dailyData.forEach(d => {
+    totals.signature += d.signature;
+    totals.tamansiswa += d.tamansiswa;
+    totals.godean += d.godean;
+    totals.sch += d.sch;
+  });
+  const best = Object.entries(totals).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('kBest').textContent = LABELS[best[0]].replace('Chicken Crush ','');
+  document.getElementById('kBestSub').textContent = fmtShort(best[1]);
+
+  // Event Listeners (Chips & Dropdown)
   document.querySelectorAll('.chip').forEach(c=>{
     c.onclick = ()=>{
       document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
@@ -305,7 +364,6 @@ function render(){
     };
   });
 
-  // Menu Dropdown Event
   document.getElementById('menuOutlet').onchange = renderMenu;
   document.getElementById('menuKategori').onchange = renderMenu;
 
@@ -383,7 +441,7 @@ function drawCompChart(){
 function renderMenu(){
   const outlet = document.getElementById('menuOutlet').value;
   const katStr = document.getElementById('menuKategori').value;
-  const [tipe, kategori, metric] = katStr.split('_'); // ex: "Terlaris", "Makanan", "Qty"
+  const [tipe, kategori, metric] = katStr.split('_'); 
   
   const isValue = metric === 'Value';
   

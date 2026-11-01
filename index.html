@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard Omset Chicken Crush - Oktober 2026</title>
+<title>Dashboard Omset Chicken Crush</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 :root{--primary:#ff6b35;--primary-dark:#e55a2b;--bg:#f5f7fa;--card:#fff;--text:#1a202c;--muted:#718096;--border:#e2e8f0;--success:#38a169}
@@ -17,26 +17,34 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
 .dot{width:8px;height:8px;border-radius:50%;background:var(--success);display:inline-block;animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 .btn{background:var(--primary);color:#fff;border:none;padding:10px 18px;border-radius:10px;cursor:pointer;font-weight:600;font-size:13px;transition:.2s;font-family:inherit}
-.btn:hover{background:var(--primary-dark);transform:translateY(-1px);box-shadow:0 6px 16px rgba(255,107,53,.35)}
-.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn:hover{background:var(--primary-dark);transform:translateY(-1px)}
 .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:20px}
-.kpi{background:var(--card);border-radius:14px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.05);border:1px solid var(--border);transition:.25s;position:relative;overflow:hidden}
-.kpi:hover{transform:translateY(-3px);box-shadow:0 10px 25px rgba(0,0,0,.08)}
+.kpi{background:var(--card);border-radius:14px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.05);border:1px solid var(--border);position:relative;overflow:hidden}
 .kpi::before{content:'';position:absolute;left:0;top:0;width:4px;height:100%;background:var(--primary)}
 .kpi:nth-child(2)::before{background:#3182ce}.kpi:nth-child(3)::before{background:#38a169}.kpi:nth-child(4)::before{background:#805ad5}
 .kpi-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;font-weight:700;margin-bottom:10px}
-.kpi-value{font-size:26px;font-weight:800;line-height:1.2;color:var(--text)}
+.kpi-value{font-size:26px;font-weight:800;line-height:1.2;}
 .kpi-sub{font-size:12px;color:var(--muted);margin-top:6px}
+
 .grid-2{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:20px}
-@media(max-width:968px){.grid-2{grid-template-columns:1fr}}
+.grid-3{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+@media(max-width:968px){.grid-2, .grid-3{grid-template-columns:1fr}}
+
 .card{background:var(--card);border-radius:14px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.05);border:1px solid var(--border)}
 .card-title{font-size:15px;font-weight:700;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
 .subtitle{font-size:12px;color:var(--muted);font-weight:400}
-.chart-wrap{position:relative;height:340px}
+
+/* Custom Dropdown Style */
+select.dropdown { appearance: none; background-color: #fff; border: 1.5px solid var(--border); padding: 8px 32px 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--text); cursor: pointer; outline: none; transition: 0.2s; background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23718096%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right 12px top 50%; background-size: 10px auto; }
+select.dropdown:hover { border-color: var(--primary); }
+select.dropdown:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255,107,53,.15); }
+
 .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
 .chip{padding:7px 16px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:12px;font-weight:600;cursor:pointer;color:var(--muted);transition:.15s;font-family:inherit}
 .chip:hover{border-color:var(--primary);color:var(--primary)}
 .chip.active{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:0 4px 12px rgba(255,107,53,.3)}
+
+.chart-wrap{position:relative;height:340px}
 .table-wrap{overflow-x:auto;max-height:420px;overflow-y:auto}
 table{width:100%;border-collapse:collapse;font-size:13px}
 thead{position:sticky;top:0;background:#f8fafc;z-index:2}
@@ -45,11 +53,23 @@ th.num{text-align:right}
 td{padding:10px 12px;border-bottom:1px solid #f1f5f9}
 td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
 tr:hover td{background:#fff9f6}
+
+/* Rank UI */
+.rank-list { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
+.rank-item { display: flex; align-items: center; gap: 12px; font-size: 13px; }
+.rank-num { width: 24px; height: 24px; border-radius: 50%; background: #edf2f7; color: #4a5568; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 11px; flex-shrink: 0; }
+.rank-item:nth-child(1) .rank-num { background: #fefcbf; color: #d69e2e; }
+.rank-item:nth-child(2) .rank-num { background: #e2e8f0; color: #718096; }
+.rank-item:nth-child(3) .rank-num { background: #feebc8; color: #c05621; }
+.rank-bar-wrap { flex-grow: 1; display: flex; flex-direction: column; gap: 4px; }
+.rank-name { display: flex; justify-content: space-between; font-weight: 600; color: var(--text); font-size: 12px;}
+.rank-bar { height: 6px; background: #f1f5f9; border-radius: 3px; overflow: hidden; width: 100%; }
+.rank-fill { height: 100%; background: var(--primary); border-radius: 3px; transition: width 0.5s ease; }
+
 .loading{text-align:center;padding:80px 20px;color:var(--muted)}
 .spinner{width:44px;height:44px;border:4px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px}
 @keyframes spin{to{transform:rotate(360deg)}}
 .notice{background:#fff4e6;border:1px solid #ffcc80;color:#b45309;padding:16px 20px;border-radius:12px;margin-bottom:20px;font-size:14px;line-height:1.6}
-.notice code{background:rgba(180,83,9,.12);padding:2px 6px;border-radius:4px;font-size:12px;font-family:monospace}
 </style>
 </head>
 <body>
@@ -66,14 +86,15 @@ tr:hover td{background:#fff9f6}
     <button class="btn" id="refreshBtn" onclick="loadData()">🔄 Refresh</button>
   </div>
 
-  <div id="notice" class="notice">
-    ⚙️ <b>Setup:</b> Buka file ini di text editor, isi <code>DAILY_CSV_URL</code> dan <code>CATEGORY_CSV_URL</code> di dalam script dengan URL CSV publikasi Google Sheet Anda. Ikuti panduan setup untuk detail lengkap.
+  <div id="notice" class="notice" style="display:none">
+    ⚙️ <b>Setup:</b> Buka file ini di text editor, isi <code>MASTER_CSV_URL</code> di dalam script dengan URL CSV publikasi Google Sheet Anda.
   </div>
   <div id="loading" class="loading" style="display:none">
     <div class="spinner"></div><div>Memuat data dari Google Sheets…</div>
   </div>
 
   <div id="dashboard" style="display:none">
+    <!-- KPI Cards -->
     <div class="kpi-grid">
       <div class="kpi"><div class="kpi-label">💰 Total Omset</div><div class="kpi-value" id="kOmset">Rp 0</div><div class="kpi-sub" id="kOmsetSub">-</div></div>
       <div class="kpi"><div class="kpi-label">🧾 Total Bill</div><div class="kpi-value" id="kBill">0</div><div class="kpi-sub" id="kBillSub">-</div></div>
@@ -81,6 +102,7 @@ tr:hover td{background:#fff9f6}
       <div class="kpi"><div class="kpi-label">🏆 Outlet Terbaik</div><div class="kpi-value" id="kBest">-</div><div class="kpi-sub" id="kBestSub">-</div></div>
     </div>
 
+    <!-- Filter Chips -->
     <div class="filters">
       <button class="chip active" data-outlet="all">Semua Outlet</button>
       <button class="chip" data-outlet="signature">Signature</button>
@@ -89,6 +111,7 @@ tr:hover td{background:#fff9f6}
       <button class="chip" data-outlet="sch">SCH</button>
     </div>
 
+    <!-- Charts Row -->
     <div class="grid-2">
       <div class="card">
         <div class="card-title"><span>Tren Omset Harian</span><span class="subtitle">Klik legend untuk toggle</span></div>
@@ -100,6 +123,42 @@ tr:hover td{background:#fff9f6}
       </div>
     </div>
 
+    <!-- Perbandingan & Menu Panel -->
+    <div class="grid-3">
+      <!-- Panel Perbandingan -->
+      <div class="card">
+        <div class="card-title"><span>Perbandingan Bulan Ini vs Lalu</span></div>
+        <div class="chart-wrap" style="height: 300px;"><canvas id="compChart"></canvas></div>
+      </div>
+      
+      <!-- Panel Menu -->
+      <div class="card">
+        <div class="card-title" style="margin-bottom: 8px;">
+          <span>Ranking Menu</span>
+          <div style="display:flex; gap:8px;">
+            <select id="menuOutlet" class="dropdown">
+              <option value="signature">Signature</option>
+              <option value="tamansiswa">Tamansiswa</option>
+              <option value="godean">Godean</option>
+              <option value="sch">SCH</option>
+            </select>
+            <select id="menuKategori" class="dropdown">
+              <option value="Terlaris_Makanan_Qty">Makanan - Terlaris (Qty)</option>
+              <option value="Terlaris_Minuman_Qty">Minuman - Terlaris (Qty)</option>
+              <option value="Terlaris_Makanan_Value">Makanan - Terlaris (Value)</option>
+              <option value="Terlaris_Minuman_Value">Minuman - Terlaris (Value)</option>
+              <option value="Kurang Laku_Makanan_Qty">Makanan - Kurang Laku (Qty)</option>
+              <option value="Kurang Laku_Minuman_Qty">Minuman - Kurang Laku (Qty)</option>
+              <option value="Kurang Laku_Makanan_Value">Makanan - Kurang Laku (Value)</option>
+              <option value="Kurang Laku_Minuman_Value">Minuman - Kurang Laku (Value)</option>
+            </select>
+          </div>
+        </div>
+        <div id="menuRankList" class="rank-list" style="max-height: 260px; overflow-y: auto;"></div>
+      </div>
+    </div>
+
+    <!-- Tabel Detail -->
     <div class="card">
       <div class="card-title"><span>Detail Harian</span><span class="subtitle" id="tableSub">-</span></div>
       <div class="table-wrap">
@@ -121,19 +180,16 @@ tr:hover td{background:#fff9f6}
 
 <script>
 /* ========== KONFIGURASI ========== */
-const DAILY_CSV_URL    = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR7ZBYz3uCVgKNdFUr1Lm0Ype6DgHzn6NyVQ15NhPaM1aZMtQEWJ3FXD-byaXX5z3t79j48aGzIiuwh/pub?gid=1327163323&single=true&output=csv'; // ← tempel URL CSV "Dashboard_Daily"
-const CATEGORY_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR7ZBYz3uCVgKNdFUr1Lm0Ype6DgHzn6NyVQ15NhPaM1aZMtQEWJ3FXD-byaXX5z3t79j48aGzIiuwh/pub?gid=80971313&single=true&output=csv'; // ← tempel URL CSV "Dashboard_Category"
-const AUTO_REFRESH_MS  = 60000;
+// PASTE URL CSV DASHBOARD_MASTER DI SINI:
+const MASTER_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR7ZBYz3uCVgKNdFUr1Lm0Ype6DgHzn6NyVQ15NhPaM1aZMtQEWJ3FXD-byaXX5z3t79j48aGzIiuwh/pub?gid=785911957&single=true&output=csv'; 
+const AUTO_REFRESH_MS = 60000;
 
 /* ========== STATE ========== */
-let dailyData = [], categoryData = [];
-let dailyChart = null, categoryChart = null;
+let dailyData = [], categoryData = [], menuData = [], compData = [];
+let dailyChart = null, categoryChart = null, compChart = null;
 let activeOutlet = 'all';
 const OUTLET_KEYS = ['signature','tamansiswa','godean','sch'];
-const LABELS = {
-  signature:'Chicken Crush Signature', tamansiswa:'Chicken Crush Tamansiswa',
-  godean:'Chicken Crush Godean', sch:'Chicken Crush SCH'
-};
+const LABELS = { signature:'Chicken Crush Signature', tamansiswa:'Chicken Crush Tamansiswa', godean:'Chicken Crush Godean', sch:'Chicken Crush SCH' };
 const COLORS = { signature:'#ff6b35', tamansiswa:'#3182ce', godean:'#38a169', sch:'#805ad5' };
 
 /* ========== HELPERS ========== */
@@ -176,9 +232,9 @@ function parseCSV(text){
   return rows;
 }
 
-/* ========== LOAD DATA ========== */
+/* ========== LOAD & PARSE DATA ========== */
 async function loadData(){
-  if(!DAILY_CSV_URL || !CATEGORY_CSV_URL){
+  if(!MASTER_CSV_URL){
     document.getElementById('notice').style.display='block';
     return;
   }
@@ -188,79 +244,72 @@ async function loadData(){
   document.getElementById('dashboard').style.display='none';
 
   try{
-    const [dTxt,cTxt] = await Promise.all([
-      fetch(DAILY_CSV_URL+'&_='+Date.now()).then(r=>r.text()),
-      fetch(CATEGORY_CSV_URL+'&_='+Date.now()).then(r=>r.text())
-    ]);
-    parseDaily(dTxt);
-    parseCategory(cTxt);
+    const txt = await fetch(MASTER_CSV_URL+'&_='+Date.now()).then(r=>r.text());
+    parseMasterData(txt);
     render();
     document.getElementById('lastUpdate').textContent='Update: '+new Date().toLocaleTimeString('id-ID');
     document.getElementById('notice').style.display='none';
   }catch(e){
     console.error(e);
-    alert('Gagal memuat data: '+e.message+'\n\nPastikan URL CSV sudah publik.');
-    document.getElementById('notice').style.display='block';
+    alert('Gagal memuat data: '+e.message);
   }finally{
     document.getElementById('loading').style.display='none';
     btn.disabled=false; btn.textContent='🔄 Refresh';
   }
 }
 
-function parseDaily(text){
-  const rows = parseCSV(text).filter(r=>r.length>1 && r[0]);
-  rows.shift(); // header
-  dailyData = rows.map(r=>({
-    tanggal: r[0], hari: r[1]||'',
-    signature: num(r[2]), signatureBill: num(r[3]),
-    tamansiswa: num(r[4]), tamansiswaBill: num(r[5]),
-    godean: num(r[6]), godeanBill: num(r[7]),
-    sch: num(r[8]), schBill: num(r[9]),
-    get total(){return this.signature+this.tamansiswa+this.godean+this.sch;},
-    get totalBill(){return this.signatureBill+this.tamansiswaBill+this.godeanBill+this.schBill;}
-  })).filter(d=>d.tanggal);
-}
+function parseMasterData(text){
+  const rows = parseCSV(text);
+  dailyData = []; categoryData = []; menuData = []; compData = [];
+  let currentSection = '';
 
-function parseCategory(text){
-  const rows = parseCSV(text).filter(r=>r.length>1 && r[0]);
-  rows.shift();
-  categoryData = rows.map(r=>({
-    outlet: r[0],
-    dineIn: num(r[1]), takeAway: num(r[2]),
-    goFood: num(r[3]), grabFood: num(r[4]),
-    shopeeFood: num(r[5]), esbOrder: num(r[6]),
-    total: num(r[7])
-  })).filter(c=>c.outlet);
+  rows.forEach(r => {
+    if(!r[0]) return;
+    if(r[0].startsWith('===')) { currentSection = r[0].replace(/=/g,'').trim(); return; }
+    
+    if(currentSection === 'HARIAN' && r[0] !== 'Tanggal'){
+      dailyData.push({ tanggal: r[0], hari: r[1], signature: num(r[2]), tamansiswa: num(r[3]), godean: num(r[4]), sch: num(r[5]) });
+    }
+    if(currentSection === 'KATEGORI' && r[0] !== 'Outlet'){
+      categoryData.push({ outlet: r[0], dineIn: num(r[1]), takeAway: num(r[2]), goFood: num(r[3]), grabFood: num(r[4]), shopeeFood: num(r[5]), esbOrder: num(r[6]) });
+    }
+    if(currentSection === 'MENU' && r[0] !== 'Outlet'){
+      menuData.push({ outlet: r[0], tipe: r[1], kategori: r[2], rank: num(r[3]), menu: r[4], nilai: num(r[5]) });
+    }
+    if(currentSection === 'PERBANDINGAN' && r[0] !== 'Outlet'){
+      compData.push({ outlet: r[0], okt: num(r[1]), sep: num(r[2]) });
+    }
+  });
 }
 
 /* ========== RENDER ========== */
 function render(){
   document.getElementById('dashboard').style.display='block';
-  const totalOmset = dailyData.reduce((s,d)=>s+d.total,0);
-  const totalBill  = dailyData.reduce((s,d)=>s+d.totalBill,0);
-  const avgBill    = totalBill>0 ? totalOmset/totalBill : 0;
-  const totals = {signature:0,tamansiswa:0,godean:0,sch:0};
-  dailyData.forEach(d=>OUTLET_KEYS.forEach(k=>totals[k]+=d[k]));
-  const best = Object.entries(totals).sort((a,b)=>b[1]-a[1])[0];
+  
+  // Hitung Total Omset & Bill
+  const totalOmset = dailyData.reduce((s,d)=>s+(d.signature+d.tamansiswa+d.godean+d.sch),0);
+  const totalBill = 0; // Bill tidak ada di master (bisa disesuaikan)
+  const avgBill = 0;
 
   document.getElementById('kOmset').textContent = fmtShort(totalOmset);
   document.getElementById('kOmsetSub').textContent = `${dailyData.length} hari • rata² ${fmtShort(totalOmset/Math.max(1,dailyData.length))}/hari`;
-  document.getElementById('kBill').textContent = totalBill.toLocaleString('id-ID');
-  document.getElementById('kBillSub').textContent = `${(totalBill/dailyData.length).toFixed(0)} bill/hari`;
-  document.getElementById('kAvg').textContent = fmtRp(avgBill);
-  document.getElementById('kBest').textContent = LABELS[best[0]].replace('Chicken Crush ','');
-  document.getElementById('kBestSub').textContent = fmtShort(best[1]);
-
+  
+  // Filter Chips
   document.querySelectorAll('.chip').forEach(c=>{
     c.onclick = ()=>{
       document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
       c.classList.add('active');
       activeOutlet = c.dataset.outlet;
-      drawDailyChart(); drawCategoryChart(); renderTable();
+      document.getElementById('menuOutlet').value = activeOutlet === 'all' ? 'signature' : activeOutlet;
+      drawDailyChart(); drawCategoryChart(); renderTable(); renderMenu();
     };
   });
 
-  drawDailyChart(); drawCategoryChart(); renderTable();
+  // Menu Dropdown Event
+  document.getElementById('menuOutlet').onchange = renderMenu;
+  document.getElementById('menuKategori').onchange = renderMenu;
+
+  drawDailyChart(); drawCategoryChart(); drawCompChart(); renderTable(); renderMenu();
 }
 
 function drawDailyChart(){
@@ -277,19 +326,12 @@ function drawDailyChart(){
   }));
   if(dailyChart) dailyChart.destroy();
   dailyChart = new Chart(ctx,{
-    type:'bar',
-    data:{labels,datasets},
+    type:'bar', data:{labels,datasets},
     options:{
       responsive:true, maintainAspectRatio:false,
       interaction:{mode:'index',intersect:false},
-      plugins:{
-        legend:{position:'top',labels:{boxWidth:12,font:{size:11},padding:12}},
-        tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${fmtRp(c.parsed.y)}`}}
-      },
-      scales:{
-        x:{grid:{display:false},ticks:{font:{size:10}}},
-        y:{beginAtZero:true,ticks:{callback:v=>fmtShort(v),font:{size:10}},grid:{color:'#f1f5f9'}}
-      }
+      plugins:{legend:{position:'top',labels:{boxWidth:12,font:{size:11}}},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${fmtRp(c.parsed.y)}`}}},
+      scales:{x:{grid:{display:false}},y:{beginAtZero:true,ticks:{callback:v=>fmtShort(v)}}}
     }
   });
 }
@@ -297,28 +339,85 @@ function drawDailyChart(){
 function drawCategoryChart(){
   const ctx = document.getElementById('categoryChart').getContext('2d');
   const cats=['dineIn','takeAway','goFood','grabFood','shopeeFood','esbOrder'];
-  const labels=['Dine In','Take Away','GoFood','GrabFood','ShopeeFood','ESB Order'];
+  const labels=['Dine In','Take Away','GoFood','GrabFood','ShopeeFood','ESB'];
   const colors=['#ff6b35','#3182ce','#38a169','#805ad5','#d69e2e','#e53e3e'];
-  let values;
+  let values = cats.map(()=>0);
+  
   if(activeOutlet==='all'){
     values = cats.map(c=>categoryData.reduce((s,r)=>s+(r[c]||0),0));
   }else{
     const row = categoryData.find(r=>r.outlet===LABELS[activeOutlet]);
-    values = row ? cats.map(c=>row[c]||0) : cats.map(()=>0);
+    if(row) values = cats.map(c=>row[c]||0);
   }
   if(categoryChart) categoryChart.destroy();
   categoryChart = new Chart(ctx,{
-    type:'bar',
-    data:{labels,datasets:[{data:values,backgroundColor:colors,borderRadius:6,borderWidth:0}]},
-    options:{
-      indexAxis:'y', responsive:true, maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtRp(c.parsed.x)}}},
-      scales:{
-        x:{beginAtZero:true,ticks:{callback:v=>fmtShort(v),font:{size:10}},grid:{color:'#f1f5f9'}},
-        y:{grid:{display:false},ticks:{font:{size:11}}}
-      }
+    type:'bar', data:{labels,datasets:[{data:values,backgroundColor:colors,borderRadius:6}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtRp(c.parsed.x)}}},scales:{x:{beginAtZero:true,ticks:{callback:v=>fmtShort(v)}},y:{grid:{display:false}}}}
+  });
+}
+
+function drawCompChart(){
+  const ctx = document.getElementById('compChart').getContext('2d');
+  const labels = compData.map(d => d.outlet.replace('Chicken Crush ',''));
+  const oktData = compData.map(d => d.okt);
+  const sepData = compData.map(d => d.sep);
+
+  if(compChart) compChart.destroy();
+  compChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        { label: 'Okt 2026', data: oktData, backgroundColor: '#ff6b35', borderRadius: 4 },
+        { label: 'Sep 2026', data: sepData, backgroundColor: '#cbd5e0', borderRadius: 4 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: {size: 11} } }, tooltip: { callbacks: { label: c => fmtRp(c.parsed.y) } } },
+      scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { callback: v => fmtShort(v) } } }
     }
   });
+}
+
+function renderMenu(){
+  const outlet = document.getElementById('menuOutlet').value;
+  const katStr = document.getElementById('menuKategori').value;
+  const [tipe, kategori, metric] = katStr.split('_'); // ex: "Terlaris", "Makanan", "Qty"
+  
+  const isValue = metric === 'Value';
+  
+  const items = menuData.filter(m => 
+    m.outlet === outlet && 
+    m.tipe === tipe && 
+    m.kategori === kategori
+  ).sort((a,b)=>a.rank-b.rank);
+
+  const container = document.getElementById('menuRankList');
+  if(!items.length) {
+    container.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px">Data tidak tersedia</div>';
+    return;
+  }
+
+  const maxVal = Math.max(...items.map(i=>i.nilai));
+  container.innerHTML = items.map((i, index) => {
+    const percent = maxVal > 0 ? (i.nilai / maxVal) * 100 : 0;
+    const fmtVal = isValue ? fmtShort(i.nilai) : `${i.nilai} pcs`;
+    return `
+      <div class="rank-item">
+        <div class="rank-num">${index + 1}</div>
+        <div class="rank-bar-wrap">
+          <div class="rank-name">
+            <span>${i.menu}</span>
+            <span style="color:var(--primary)">${fmtVal}</span>
+          </div>
+          <div class="rank-bar">
+            <div class="rank-fill" style="width: ${percent}%"></div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 function renderTable(){
@@ -333,19 +432,20 @@ function renderTable(){
     const dt = new Date(d.tanggal);
     const tgl = isNaN(dt)?d.tanggal:dt.toLocaleDateString('id-ID',{day:'2-digit',month:'short'});
     const c = k => show(k) ? `<td class="num">${fmtRp(d[k])}</td>` : '<td style="display:none"></td>';
+    const total = d.signature + d.tamansiswa + d.godean + d.sch;
     return `<tr>
       <td>${tgl}</td><td>${d.hari}</td>
       ${c('signature')}${c('tamansiswa')}${c('godean')}${c('sch')}
-      <td class="num"><b>${fmtRp(d.total)}</b></td>
+      <td class="num"><b>${fmtRp(total)}</b></td>
     </tr>`;
   }).join('');
-  document.getElementById('tableSub').textContent =
-    activeOutlet==='all' ? 'Semua outlet' : LABELS[activeOutlet];
+  
+  document.getElementById('tableSub').textContent = activeOutlet==='all' ? 'Semua outlet' : LABELS[activeOutlet];
 }
 
 /* ========== INIT ========== */
 loadData();
-setInterval(()=>{ if(DAILY_CSV_URL) loadData(); }, AUTO_REFRESH_MS);
+setInterval(()=>{ if(MASTER_CSV_URL) loadData(); }, AUTO_REFRESH_MS);
 </script>
 </body>
 </html>

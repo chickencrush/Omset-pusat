@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Omset Chicken Crush - Oktober 2026</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{--primary:#ff6b35;--primary-dark:#e55a2b;--bg:#f5f7fa;--card:#fff;--text:#1a202c;--muted:#718096;--border:#e2e8f0;--success:#38a169}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);padding:24px;min-height:100vh}
+.container{max-width:1400px;margin:0 auto}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:16px}
+.header h1{font-size:28px;font-weight:700;letter-spacing:-.5px}
+.header h1 span{color:var(--primary)}
+.meta{display:flex;gap:10px;align-items:center;font-size:13px;color:var(--muted);margin-top:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--success);display:inline-block;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.btn{background:var(--primary);color:#fff;border:none;padding:10px 18px;border-radius:10px;cursor:pointer;font-weight:600;font-size:13px;transition:.2s;font-family:inherit}
+.btn:hover{background:var(--primary-dark);transform:translateY(-1px);box-shadow:0 6px 16px rgba(255,107,53,.35)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:20px}
+.kpi{background:var(--card);border-radius:14px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.05);border:1px solid var(--border);transition:.25s;position:relative;overflow:hidden}
+.kpi:hover{transform:translateY(-3px);box-shadow:0 10px 25px rgba(0,0,0,.08)}
+.kpi::before{content:'';position:absolute;left:0;top:0;width:4px;height:100%;background:var(--primary)}
+.kpi:nth-child(2)::before{background:#3182ce}.kpi:nth-child(3)::before{background:#38a169}.kpi:nth-child(4)::before{background:#805ad5}
+.kpi-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;font-weight:700;margin-bottom:10px}
+.kpi-value{font-size:26px;font-weight:800;line-height:1.2;color:var(--text)}
+.kpi-sub{font-size:12px;color:var(--muted);margin-top:6px}
+.grid-2{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:20px}
+@media(max-width:968px){.grid-2{grid-template-columns:1fr}}
+.card{background:var(--card);border-radius:14px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.05);border:1px solid var(--border)}
+.card-title{font-size:15px;font-weight:700;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.subtitle{font-size:12px;color:var(--muted);font-weight:400}
+.chart-wrap{position:relative;height:340px}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.chip{padding:7px 16px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:12px;font-weight:600;cursor:pointer;color:var(--muted);transition:.15s;font-family:inherit}
+.chip:hover{border-color:var(--primary);color:var(--primary)}
+.chip.active{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:0 4px 12px rgba(255,107,53,.3)}
+.table-wrap{overflow-x:auto;max-height:420px;overflow-y:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead{position:sticky;top:0;background:#f8fafc;z-index:2}
+th{text-align:left;padding:11px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);border-bottom:1px solid var(--border);font-weight:700}
+th.num{text-align:right}
+td{padding:10px 12px;border-bottom:1px solid #f1f5f9}
+td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
+tr:hover td{background:#fff9f6}
+.loading{text-align:center;padding:80px 20px;color:var(--muted)}
+.spinner{width:44px;height:44px;border:4px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.notice{background:#fff4e6;border:1px solid #ffcc80;color:#b45309;padding:16px 20px;border-radius:12px;margin-bottom:20px;font-size:14px;line-height:1.6}
+.notice code{background:rgba(180,83,9,.12);padding:2px 6px;border-radius:4px;font-size:12px;font-family:monospace}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div>
+      <h1>Dashboard <span>Omset</span> Chicken Crush</h1>
+      <div class="meta">
+        <span><span class="dot"></span> Live Sync</span>
+        <span>•</span><span>Oktober 2026</span>
+        <span>•</span><span id="lastUpdate">Memuat...</span>
+      </div>
+    </div>
+    <button class="btn" id="refreshBtn" onclick="loadData()">🔄 Refresh</button>
+  </div>
+
+  <div id="notice" class="notice">
+    ⚙️ <b>Setup:</b> Buka file ini di text editor, isi <code>DAILY_CSV_URL</code> dan <code>CATEGORY_CSV_URL</code> di dalam script dengan URL CSV publikasi Google Sheet Anda. Ikuti panduan setup untuk detail lengkap.
+  </div>
+  <div id="loading" class="loading" style="display:none">
+    <div class="spinner"></div><div>Memuat data dari Google Sheets…</div>
+  </div>
+
+  <div id="dashboard" style="display:none">
+    <div class="kpi-grid">
+      <div class="kpi"><div class="kpi-label">💰 Total Omset</div><div class="kpi-value" id="kOmset">Rp 0</div><div class="kpi-sub" id="kOmsetSub">-</div></div>
+      <div class="kpi"><div class="kpi-label">🧾 Total Bill</div><div class="kpi-value" id="kBill">0</div><div class="kpi-sub" id="kBillSub">-</div></div>
+      <div class="kpi"><div class="kpi-label">📊 Rata-rata / Bill</div><div class="kpi-value" id="kAvg">Rp 0</div><div class="kpi-sub">Semua outlet</div></div>
+      <div class="kpi"><div class="kpi-label">🏆 Outlet Terbaik</div><div class="kpi-value" id="kBest">-</div><div class="kpi-sub" id="kBestSub">-</div></div>
+    </div>
+
+    <div class="filters">
+      <button class="chip active" data-outlet="all">Semua Outlet</button>
+      <button class="chip" data-outlet="signature">Signature</button>
+      <button class="chip" data-outlet="tamansiswa">Tamansiswa</button>
+      <button class="chip" data-outlet="godean">Godean</button>
+      <button class="chip" data-outlet="sch">SCH</button>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title"><span>Tren Omset Harian</span><span class="subtitle">Klik legend untuk toggle</span></div>
+        <div class="chart-wrap"><canvas id="dailyChart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span>Kontribusi Kategori</span></div>
+        <div class="chart-wrap"><canvas id="categoryChart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span>Detail Harian</span><span class="subtitle" id="tableSub">-</span></div>
+      <div class="table-wrap">
+        <table id="detailTable">
+          <thead><tr>
+            <th>Tanggal</th><th>Hari</th>
+            <th class="num col-signature">Signature</th>
+            <th class="num col-tamansiswa">Tamansiswa</th>
+            <th class="num col-godean">Godean</th>
+            <th class="num col-sch">SCH</th>
+            <th class="num">Total</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ========== KONFIGURASI ========== */
+const DAILY_CSV_URL    = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR7ZBYz3uCVgKNdFUr1Lm0Ype6DgHzn6NyVQ15NhPaM1aZMtQEWJ3FXD-byaXX5z3t79j48aGzIiuwh/pub?gid=1327163323&single=true&output=csv'; // ← tempel URL CSV "Dashboard_Daily"
+const CATEGORY_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR7ZBYz3uCVgKNdFUr1Lm0Ype6DgHzn6NyVQ15NhPaM1aZMtQEWJ3FXD-byaXX5z3t79j48aGzIiuwh/pub?gid=80971313&single=true&output=csv
+'; // ← tempel URL CSV "Dashboard_Category"
+const AUTO_REFRESH_MS  = 60000;
+
+/* ========== STATE ========== */
+let dailyData = [], categoryData = [];
+let dailyChart = null, categoryChart = null;
+let activeOutlet = 'all';
+const OUTLET_KEYS = ['signature','tamansiswa','godean','sch'];
+const LABELS = {
+  signature:'Chicken Crush Signature', tamansiswa:'Chicken Crush Tamansiswa',
+  godean:'Chicken Crush Godean', sch:'Chicken Crush SCH'
+};
+const COLORS = { signature:'#ff6b35', tamansiswa:'#3182ce', godean:'#38a169', sch:'#805ad5' };
+
+/* ========== HELPERS ========== */
+function num(v){
+  if(v==null||v==='') return 0;
+  let s = String(v).trim().replace(/Rp|\s/gi,'');
+  if(!s) return 0;
+  if(s.includes('.')&&s.includes(',')) s=s.replace(/\./g,'').replace(',','.');
+  else if(s.includes(',')){
+    const p=s.split(',');
+    if(p.length>1 && p[p.length-1].length===3) s=s.replace(/,/g,'');
+    else s=s.replace(',','.');
+  }
+  const n = parseFloat(s);
+  return isNaN(n)?0:n;
+}
+function fmtRp(n){ return 'Rp '+Math.round(n).toLocaleString('id-ID'); }
+function fmtShort(n){
+  if(n>=1e9) return 'Rp '+(n/1e9).toFixed(2)+' M';
+  if(n>=1e6) return 'Rp '+(n/1e6).toFixed(1)+' jt';
+  if(n>=1e3) return 'Rp '+(n/1e3).toFixed(0)+' rb';
+  return 'Rp '+n;
+}
+function parseCSV(text){
+  const rows=[]; let cur='', inQ=false, row=[];
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(inQ){
+      if(c==='"'&&text[i+1]==='"'){cur+='"';i++;}
+      else if(c==='"') inQ=false;
+      else cur+=c;
+    } else {
+      if(c==='"') inQ=true;
+      else if(c===','){row.push(cur);cur='';}
+      else if(c==='\n'){row.push(cur);rows.push(row);row=[];cur='';}
+      else if(c!=='\r') cur+=c;
+    }
+  }
+  if(cur!==''||row.length){row.push(cur);rows.push(row);}
+  return rows;
+}
+
+/* ========== LOAD DATA ========== */
+async function loadData(){
+  if(!DAILY_CSV_URL || !CATEGORY_CSV_URL){
+    document.getElementById('notice').style.display='block';
+    return;
+  }
+  const btn=document.getElementById('refreshBtn');
+  btn.disabled=true; btn.textContent='⏳ Memuat...';
+  document.getElementById('loading').style.display='block';
+  document.getElementById('dashboard').style.display='none';
+
+  try{
+    const [dTxt,cTxt] = await Promise.all([
+      fetch(DAILY_CSV_URL+'&_='+Date.now()).then(r=>r.text()),
+      fetch(CATEGORY_CSV_URL+'&_='+Date.now()).then(r=>r.text())
+    ]);
+    parseDaily(dTxt);
+    parseCategory(cTxt);
+    render();
+    document.getElementById('lastUpdate').textContent='Update: '+new Date().toLocaleTimeString('id-ID');
+    document.getElementById('notice').style.display='none';
+  }catch(e){
+    console.error(e);
+    alert('Gagal memuat data: '+e.message+'\n\nPastikan URL CSV sudah publik.');
+    document.getElementById('notice').style.display='block';
+  }finally{
+    document.getElementById('loading').style.display='none';
+    btn.disabled=false; btn.textContent='🔄 Refresh';
+  }
+}
+
+function parseDaily(text){
+  const rows = parseCSV(text).filter(r=>r.length>1 && r[0]);
+  rows.shift(); // header
+  dailyData = rows.map(r=>({
+    tanggal: r[0], hari: r[1]||'',
+    signature: num(r[2]), signatureBill: num(r[3]),
+    tamansiswa: num(r[4]), tamansiswaBill: num(r[5]),
+    godean: num(r[6]), godeanBill: num(r[7]),
+    sch: num(r[8]), schBill: num(r[9]),
+    get total(){return this.signature+this.tamansiswa+this.godean+this.sch;},
+    get totalBill(){return this.signatureBill+this.tamansiswaBill+this.godeanBill+this.schBill;}
+  })).filter(d=>d.tanggal);
+}
+
+function parseCategory(text){
+  const rows = parseCSV(text).filter(r=>r.length>1 && r[0]);
+  rows.shift();
+  categoryData = rows.map(r=>({
+    outlet: r[0],
+    dineIn: num(r[1]), takeAway: num(r[2]),
+    goFood: num(r[3]), grabFood: num(r[4]),
+    shopeeFood: num(r[5]), esbOrder: num(r[6]),
+    total: num(r[7])
+  })).filter(c=>c.outlet);
+}
+
+/* ========== RENDER ========== */
+function render(){
+  document.getElementById('dashboard').style.display='block';
+  const totalOmset = dailyData.reduce((s,d)=>s+d.total,0);
+  const totalBill  = dailyData.reduce((s,d)=>s+d.totalBill,0);
+  const avgBill    = totalBill>0 ? totalOmset/totalBill : 0;
+  const totals = {signature:0,tamansiswa:0,godean:0,sch:0};
+  dailyData.forEach(d=>OUTLET_KEYS.forEach(k=>totals[k]+=d[k]));
+  const best = Object.entries(totals).sort((a,b)=>b[1]-a[1])[0];
+
+  document.getElementById('kOmset').textContent = fmtShort(totalOmset);
+  document.getElementById('kOmsetSub').textContent = `${dailyData.length} hari • rata² ${fmtShort(totalOmset/Math.max(1,dailyData.length))}/hari`;
+  document.getElementById('kBill').textContent = totalBill.toLocaleString('id-ID');
+  document.getElementById('kBillSub').textContent = `${(totalBill/dailyData.length).toFixed(0)} bill/hari`;
+  document.getElementById('kAvg').textContent = fmtRp(avgBill);
+  document.getElementById('kBest').textContent = LABELS[best[0]].replace('Chicken Crush ','');
+  document.getElementById('kBestSub').textContent = fmtShort(best[1]);
+
+  document.querySelectorAll('.chip').forEach(c=>{
+    c.onclick = ()=>{
+      document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
+      c.classList.add('active');
+      activeOutlet = c.dataset.outlet;
+      drawDailyChart(); drawCategoryChart(); renderTable();
+    };
+  });
+
+  drawDailyChart(); drawCategoryChart(); renderTable();
+}
+
+function drawDailyChart(){
+  const ctx = document.getElementById('dailyChart').getContext('2d');
+  const labels = dailyData.map(d=>{
+    const dt = new Date(d.tanggal);
+    return isNaN(dt) ? d.tanggal : dt.getDate()+' '+dt.toLocaleDateString('id-ID',{month:'short'});
+  });
+  const datasets = OUTLET_KEYS.map(k=>({
+    label: LABELS[k], data: dailyData.map(d=>d[k]),
+    backgroundColor: COLORS[k]+'dd', borderColor: COLORS[k],
+    borderWidth:1.5, borderRadius:5,
+    hidden: activeOutlet!=='all' && activeOutlet!==k
+  }));
+  if(dailyChart) dailyChart.destroy();
+  dailyChart = new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{position:'top',labels:{boxWidth:12,font:{size:11},padding:12}},
+        tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${fmtRp(c.parsed.y)}`}}
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:10}}},
+        y:{beginAtZero:true,ticks:{callback:v=>fmtShort(v),font:{size:10}},grid:{color:'#f1f5f9'}}
+      }
+    }
+  });
+}
+
+function drawCategoryChart(){
+  const ctx = document.getElementById('categoryChart').getContext('2d');
+  const cats=['dineIn','takeAway','goFood','grabFood','shopeeFood','esbOrder'];
+  const labels=['Dine In','Take Away','GoFood','GrabFood','ShopeeFood','ESB Order'];
+  const colors=['#ff6b35','#3182ce','#38a169','#805ad5','#d69e2e','#e53e3e'];
+  let values;
+  if(activeOutlet==='all'){
+    values = cats.map(c=>categoryData.reduce((s,r)=>s+(r[c]||0),0));
+  }else{
+    const row = categoryData.find(r=>r.outlet===LABELS[activeOutlet]);
+    values = row ? cats.map(c=>row[c]||0) : cats.map(()=>0);
+  }
+  if(categoryChart) categoryChart.destroy();
+  categoryChart = new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[{data:values,backgroundColor:colors,borderRadius:6,borderWidth:0}]},
+    options:{
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtRp(c.parsed.x)}}},
+      scales:{
+        x:{beginAtZero:true,ticks:{callback:v=>fmtShort(v),font:{size:10}},grid:{color:'#f1f5f9'}},
+        y:{grid:{display:false},ticks:{font:{size:11}}}
+      }
+    }
+  });
+}
+
+function renderTable(){
+  const tbody=document.querySelector('#detailTable tbody');
+  const show = k => activeOutlet==='all' || activeOutlet===k;
+  document.querySelectorAll('.col-signature').forEach(e=>e.style.display = show('signature')?'':'none');
+  document.querySelectorAll('.col-tamansiswa').forEach(e=>e.style.display = show('tamansiswa')?'':'none');
+  document.querySelectorAll('.col-godean').forEach(e=>e.style.display = show('godean')?'':'none');
+  document.querySelectorAll('.col-sch').forEach(e=>e.style.display = show('sch')?'':'none');
+
+  tbody.innerHTML = dailyData.map(d=>{
+    const dt = new Date(d.tanggal);
+    const tgl = isNaN(dt)?d.tanggal:dt.toLocaleDateString('id-ID',{day:'2-digit',month:'short'});
+    const c = k => show(k) ? `<td class="num">${fmtRp(d[k])}</td>` : '<td style="display:none"></td>';
+    return `<tr>
+      <td>${tgl}</td><td>${d.hari}</td>
+      ${c('signature')}${c('tamansiswa')}${c('godean')}${c('sch')}
+      <td class="num"><b>${fmtRp(d.total)}</b></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('tableSub').textContent =
+    activeOutlet==='all' ? 'Semua outlet' : LABELS[activeOutlet];
+}
+
+/* ========== INIT ========== */
+loadData();
+setInterval(()=>{ if(DAILY_CSV_URL) loadData(); }, AUTO_REFRESH_MS);
+</script>
+</body>
+</html>
